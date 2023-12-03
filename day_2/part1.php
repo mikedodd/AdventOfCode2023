@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Parses a game string to extract game ID and cube details.
  *
