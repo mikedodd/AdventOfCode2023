@@ -1,15 +1,5 @@
 <?php
 
-const CARD_TYPES = [
-    'Five of a kind' => 9,
-    'Four of a kind' => 8,
-    'Full house' => 7,
-    'Three of a kind' => 6,
-    'Two pair' => 5,
-    'One pair' => 4,
-    'High card' => 3
-];
-
 /**
  * Parses the hand data from a given file path and returns it as an array.
  *
