@@ -57,6 +57,4 @@ function extrapolate(array $lines): int
 
 $filePath = 'input.txt';
 $lines = parseInput($filePath);
-
-$part1 = extrapolate($lines);
-echo "Sum of these extrapolated values: " . $part1 . "\n";
+echo "Sum of these extrapolated values: " . extrapolate($lines) . "\n";
