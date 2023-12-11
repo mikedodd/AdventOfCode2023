@@ -1,82 +1,121 @@
 <?php
 
+const GALAXY_SYMBOL = '#';
+const FILEPATH = 'input.txt';
+
 /**
- * Gets adjacent coordinates for a given position on the map.
+ * Reads the content of a file and returns it as an array of strings.
  *
- * @param array $map The array representation of the map.
- * @param int $xCoordinate The x-coordinate of the current position.
- * @param int $yCoordinate The y-coordinate of the current position.
- * @return array Returns an array of adjacent coordinates.
+ * @param string $filePath The path to the file to be read.
+ *
+ * @return array An array of strings, where each element represents a line from the file.
  */
-function getAdjacentCoordinates(array $map, int $xCoordinate, int $yCoordinate): array
-{
-    $adjacentCoordinates = [];
-    if (in_array($map[$yCoordinate][$xCoordinate], ['S', '-', 'J', '7']) && isset($map[$yCoordinate][$xCoordinate - 1]) && in_array($map[$yCoordinate][$xCoordinate - 1], ['-', 'L', 'F'])) {
-        $adjacentCoordinates[] = [$xCoordinate - 1, $yCoordinate];
-    }
-    if (in_array($map[$yCoordinate][$xCoordinate], ['S', '-', 'L', 'F']) && isset($map[$yCoordinate][$xCoordinate + 1]) && in_array($map[$yCoordinate][$xCoordinate + 1], ['-', 'J', '7'])) {
-        $adjacentCoordinates[] = [$xCoordinate + 1, $yCoordinate];
-    }
-    if (in_array($map[$yCoordinate][$xCoordinate], ['S', '|', 'L', 'J']) && isset($map[$yCoordinate - 1][$xCoordinate]) && in_array($map[$yCoordinate - 1][$xCoordinate], ['|', '7', 'F'])) {
-        $adjacentCoordinates[] = [$xCoordinate, $yCoordinate - 1];
-    }
-    if (in_array($map[$yCoordinate][$xCoordinate], ['S', '|', '7', 'F']) && isset($map[$yCoordinate + 1][$xCoordinate]) && in_array($map[$yCoordinate + 1][$xCoordinate], ['|', 'L', 'J'])) {
-        $adjacentCoordinates[] = [$xCoordinate, $yCoordinate + 1];
-    }
-    return $adjacentCoordinates;
+function readInput(string $filePath): array {
+    return array_map('str_split', file($filePath, FILE_IGNORE_NEW_LINES));
 }
 
 /**
- * Gets the initial position of the map explorer based on the map data.
+ * Finds the positions of the galaxies in the given data.
  *
- * @param array $rows The array representation of the rows of the map.
- * @return array|null Returns an array of the initial position coordinates or null if not found.
- */
-function getInitialPosition(array &$rows): ?array
-{
-    foreach ($rows as $rowIndex => $row) {
-        $rows[$rowIndex] = str_split($row);
-        $startPosition = array_search('S', $rows[$rowIndex]);
-        if ($startPosition !== false) {
-            return [$startPosition, $rowIndex];
-        }
-    }
-    return null;
-}
-
-/**
- * Computes the number of moves required to navigate the map and reach the final position.
+ * @param array $data The data containing the galaxy positions.
  *
- * @param string $mapData The map input.
- * @return int Returns the number of moves.
+ * @return array The positions of the galaxies.
  */
-function computeMapTraversal(string $mapData): int
+function findGalaxyPositions(array $data): array
 {
-    $rows = explode(PHP_EOL, $mapData);
-    $initialPosition = getInitialPosition($rows);
-
-    $positionsToExplore = getAdjacentCoordinates($rows, $initialPosition[0], $initialPosition[1]);
-    $moveCount = 1;
-
-    while (true) {
-        foreach ($positionsToExplore as $index => $position) {
-            $newPosition = getAdjacentCoordinates($rows, $position[0], $position[1]);
-            $rows[$position[1]][$position[0]] = 'S';
-            if (empty($newPosition)) {
-                break 2; // Break out of both loops.
+    $positions = [];
+    foreach ($data as $y => $row) {
+        foreach ($row as $x => $value) {
+            if (isGalaxyPoint($value)) {
+                $positions[] = [$x, $y];
             }
-            $positionsToExplore[$index] = $newPosition[0];
-        }
-        $moveCount++;
-        if ($positionsToExplore[0] === $positionsToExplore[1]) {
-            break;
         }
     }
-
-    return $moveCount;
+    return $positions;
 }
 
-$mapInputData = file_get_contents('input.txt');
-$numberOfMoves = computeMapTraversal($mapInputData);
+/**
+ *  Check if the value is galaxy point.
+ *
+ *  @param mixed $value
+ *
+ *  @return bool
+ */
+function isGalaxyPoint($value): bool
+{
+    return $value === GALAXY_SYMBOL;
+}
 
-echo "Number of moves: " . $numberOfMoves;
+/**
+ * Expand the given positions array by finding the missing x and y positions within the specified row and column count.
+ *
+ * @param array $positions An array of positions [x, y]
+ * @param int $rowCount The total number of rows
+ * @param int $colCount The total number of columns
+ *
+ * @return array An array containing expanded x and y positions.
+ */
+function expandPositions(array $positions, int $rowCount, int $colCount): array
+{
+    $xPositions = array_column($positions, 0);
+    $yPositions = array_column($positions, 1);
+    $xToExpand = array_diff(range(0, $colCount - 1), array_unique($xPositions));
+    $yToExpand = array_diff(range(0, $rowCount - 1), array_unique($yPositions));
+    return [$xToExpand, $yToExpand];
+}
+
+/**
+ * Calculates the expanded positions based on the current position and given arrays.
+ *
+ * @param array $currentPos The current position [$x, $y].
+ * @param array $positions An array of positions [$pos1, $pos2, ...].
+ * @param array $xToExpand An array of x values to expand.
+ * @*/
+function calculateExpandedPositions(array $currentPos, array $positions, array $xToExpand, array $yToExpand): array
+{
+    $distX = 0;
+    $distY = 0;
+    foreach ($positions as $pos) {
+        $distX += abs($currentPos[0] - $pos[0]);
+        $distY += abs($currentPos[1] - $pos[1]);
+        foreach ($xToExpand as $x) {
+            if ($currentPos[0] < $x && $x < $pos[0] || $pos[0] < $x && $x < $currentPos[0]) {
+                $distX++;
+            }
+        }
+        foreach ($yToExpand as $y) {
+            if ($currentPos[1] < $y && $y < $pos[1] || $pos[1] < $y && $y < $currentPos[1]) {
+                $distY++;
+            }
+        }
+    }
+    return [$distX, $distY];
+}
+
+/**
+ * Calculate the total distance given an array of positions and data.
+ *
+ * @param array $positions An array of positions.
+ * @param array $data An array of data.
+ *
+ * @return int The calculated total distance.
+ */
+function calculateTotalDistance(array $positions, array $data): int
+{
+    $rowCount = count($data);
+    $colCount = count($data[0]);
+    list($xToExpand, $yToExpand) = expandPositions($positions, $rowCount, $colCount);
+    $totalDistance = 0;
+    while ($positions) {
+        $currentPos = array_pop($positions);
+        list($distX, $distY) = calculateExpandedPositions($currentPos, $positions, $xToExpand, $yToExpand);
+        $totalDistance += $distX + $distY;
+    }
+    return $totalDistance;
+}
+
+$inputData = readInput(FILEPATH);
+$galaxyPositions = findGalaxyPositions($inputData);
+$totalDistance = calculateTotalDistance($galaxyPositions, $inputData);
+
+echo "Total distance: " . $totalDistance;
