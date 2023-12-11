@@ -1,6 +1,8 @@
 <?php
 
 const GALAXY_SYMBOL = '#';
+const FILEPATH = 'input.txt';
+const EXPANSION_FACTOR = 1000000;
 
 /**
  * Reads the content of a file and returns it as an array of strings.
@@ -150,10 +152,8 @@ function shouldExpand(int $currentPos, int $pos, int $value): bool
     return ($currentPos < $value && $value < $pos) || ($pos < $value && $value < $currentPos);
 }
 
-$filePath = 'input.txt';
-$inputData = readInput($filePath);
+$inputData = readInput(FILEPATH);
 $galaxyPositions = findGalaxyPositions($inputData);
-$expansionFactor = 1000000;
-$totalDistance = calculateTotalDistance($galaxyPositions, $inputData, $expansionFactor);
+$totalDistance = calculateTotalDistance($galaxyPositions, $inputData, EXPANSION_FACTOR);
 
 echo "Total distance with expansion: " . $totalDistance;
