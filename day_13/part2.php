@@ -3,12 +3,6 @@
 const FILEPATH = 'input.txt';
 const Y_REFLECTION_FACTOR = 100;
 
-/**
- * Calculates the total reflection score with smudge fix based on the given prepared content.
- *
- * @param string $preparedContent The prepared content containing pattern blocks.
- * @return int The total reflection score with smudge fix.
- */
 function calculateReflectionSummaryWithSmudgeFix(string $preparedContent): int
 {
     $total = 0;
@@ -23,12 +17,6 @@ function calculateReflectionSummaryWithSmudgeFix(string $preparedContent): int
     return $total;
 }
 
-/**
- * Fixes the smudge in the pattern block by flipping the corresponding smudge.
- *
- * @param array $patternBlock The pattern block.
- * @return int The position of the new valid reflection line, or throws an error if no smudge found.
- */
 function fixSmudgeInPattern(array $patternBlock): int
 {
     // Logic to find and fix the smudge
@@ -59,7 +47,7 @@ function fixSmudgeInPattern(array $patternBlock): int
  * @param array $newPatternBlock The new pattern block.
  * @param array $originalXReflections The original X reflections.
  * @param array $originalYReflections The original Y reflections.
- * @return int The calculated reflection value if a valid reflection line exists, or false otherwise.
+ * @return int|false The calculated reflection value if a valid reflection line exists, or false otherwise.
  */
 function hasNewValidReflectionLine(array $newPatternBlock, array $originalXReflections, array $originalYReflections): int
 {
